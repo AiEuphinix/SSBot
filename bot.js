@@ -8,7 +8,6 @@ dotenv.config();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const OWNER_ID = parseInt(process.env.OWNER_ID);
 
-// store connected group persistently
 const DATA_FILE = "connected.json";
 let connectedGroupId = null;
 
@@ -21,6 +20,12 @@ if (fs.existsSync(DATA_FILE)) {
 // Save connection
 function saveConnection(groupId) {
   fs.writeFileSync(DATA_FILE, JSON.stringify({ groupId }));
+}
+
+// Escape text for MarkdownV2
+function escapeMarkdown(text) {
+  if (!text) return "";
+  return text.replace(/([_*()~`>#+\-=|{}.!\\])/g, "\\$1");
 }
 
 // --- OWNER COMMANDS ---
@@ -59,22 +64,23 @@ bot.on("photo", async (ctx) => {
   }
 
   const user = ctx.from;
-
-  // Myanmar time
   const myanmarTime = moment().tz("Asia/Yangon").format("DD/MM/YY HH:mm:ss");
 
-  const caption = `
-*New Receipt Received*
-🚹: ${user.first_name || ""} ${user.last_name || ""}
+  // Escape fields
+  const name = escapeMarkdown(`${user.first_name || ""} ${user.last_name || ""}`);
+  const username = user.username ? `@${escapeMarkdown(user.username)}` : "Not Available";
+  const userId = escapeMarkdown(String(user.id));
+
+  const caption =
+`*New Receipt Received*
+🚹: ${name}
 🔗: [Profile](tg://user?id=${user.id})
-👤: ${user.username ? "@" + user.username : "Not Available"}
+👤: ${username}
 📞: Not Available
-🆔: \`${user.id}\`
-🗓️: ${myanmarTime}
-`;
+🆔: \`${userId}\`
+🗓️: ${escapeMarkdown(myanmarTime)}`;
 
   try {
-    // Get largest photo
     const photo = ctx.message.photo[ctx.message.photo.length - 1].file_id;
 
     // Reply to user
@@ -83,7 +89,7 @@ bot.on("photo", async (ctx) => {
     // Forward to group with caption
     await ctx.telegram.sendPhoto(connectedGroupId, photo, {
       caption,
-      parse_mode: "Markdown"
+      parse_mode: "MarkdownV2"
     });
 
   } catch (err) {
