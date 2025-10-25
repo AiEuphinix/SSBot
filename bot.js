@@ -236,7 +236,8 @@ bot.action(/receipt_date_(.+)/, isOwner, async (ctx) => {
 // --- USER WORKFLOWS ---
 
 bot.start(async (ctx) => {
-  await ctx.reply("မင်္ဂလာပါခင်ဗျ ဒီBotမှာပြေစာလေးပဲပို့ပေးပါခင်ဗျ။");
+  // --- UPDATED MESSAGE HERE ---
+  await ctx.reply("မင်္ဂလာပါ၊ ပြေစာအား မိမိဝယ်ယူသော ပစ္စည်းအမည်ကိုရေး၍ ပို့ပေးပါ။\n\nEg: Telegram Premium");
 });
 
 // When user sends a photo (receipt)
